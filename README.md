@@ -39,3 +39,76 @@ MST: {{mst}}
 
 Số liệu:
 - {{so1}}, {{so2}}, ..., {{so11}}
+
+
+2. Chuẩn bị Google Sheets
+Tạo một Google Sheet có dữ liệu theo thứ tự cột như sau:
+
+STT	CCCD	Họ tên	...	Địa chỉ	Ngày cấp	Nơi cấp	MST	...	so1	so2	...	so11
+
+3. Thêm Script vào Sheets
+Vào Extensions > Apps Script
+
+Dán đoạn code sau vào:
+
+javascript
+Sao chép
+Chỉnh sửa
+function createDocsFromSheetData() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = sheet.getDataRange().getValues();
+  var templateFileId = 'YOUR_TEMPLATE_FILE_ID'; // <-- Thay ID tại đây
+
+  for (var i = 1; i < data.length; i++) {
+    var ten = data[i][2];
+    if (!ten) continue;
+
+    var diachi = data[i][6];
+    var cccd = data[i][1];
+    var ngaycap = data[i][7];
+    var noicap = data[i][8];
+    var mst = data[i][9];
+
+    var doc = DriveApp.getFileById(templateFileId).makeCopy("Hợp đồng - " + ten);
+    var docId = doc.getId();
+    var docBody = DocumentApp.openById(docId).getBody();
+
+    docBody.replaceText('{{ten}}', ten);
+    docBody.replaceText('{{diachi}}', diachi);
+    docBody.replaceText('{{cccd}}', cccd);
+    docBody.replaceText('{{ngaycap}}', ngaycap);
+    docBody.replaceText('{{noicap}}', noicap);
+    docBody.replaceText('{{mst}}', mst);
+
+    for (var j = 1; j <= 11; j++) {
+      docBody.replaceText('{{so' + j + '}}', data[i][10 + j]);
+    }
+  }
+}
+4. Chạy script
+Nhấn nút ▶️ để chạy hàm createDocsFromSheetData
+
+Cấp quyền truy cập nếu được yêu cầu (Google sẽ hỏi một lần đầu)
+
+📁 Kết quả
+Các file Google Docs sẽ được tạo trong Google Drive của bạn
+
+Tên file theo định dạng: Hợp đồng - [Họ tên]
+
+📌 Ghi chú
+Script này chỉ chạy trong cùng tài khoản Google (không dùng được cho người ngoài nếu không cấp quyền).
+
+Có thể kết hợp thêm:
+
+Xuất file PDF
+
+Gửi email đính kèm
+
+Lưu vào thư mục cụ thể
+
+🧪 Demo (tuỳ chọn)
+[link đến video hoặc ảnh demo nếu có]
+
+❤️ Tác giả
+Anh Hoan
+Lập trình viên web & yêu tự động hoá
