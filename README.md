@@ -22,93 +22,72 @@ Một script đơn giản giúp bạn **tạo hàng loạt tài liệu Google Do
 3. Chạy Apps Script, mỗi dòng trong Sheets sẽ tạo ra một Google Docs mới được điền sẵn thông tin.
 
 ---
+🛠️ Hướng dẫn sử dụng
+1. Tạo Google Docs Template
+Mở Google Docs mới
 
-## 🛠️ Hướng dẫn sử dụng
+Chèn các biến placeholder ở những chỗ cần điền dữ liệu, ví dụ:
 
-### 1. Tạo Google Docs Template
-
-Trong tài liệu, chèn các placeholder như:
-
-```text
+text
+Sao chép
+Chỉnh sửa
 Họ tên: {{ten}}
 Địa chỉ: {{diachi}}
 CCCD: {{cccd}}
 Ngày cấp: {{ngaycap}}
 Nơi cấp: {{noicap}}
-MST: {{mst}}
+Mã số thuế: {{mst}}
 
-Số liệu:
+Số liệu bổ sung:
 - {{so1}}, {{so2}}, ..., {{so11}}
+💡 Tip: Đừng bỏ sót {{}}, vì đó là cách script nhận biết chỗ cần thay dữ liệu.
 
+2. Lấy ID file template
+Sau khi tạo xong template, copy ID trên URL:
 
-2. Chuẩn bị Google Sheets
-Tạo một Google Sheet có dữ liệu theo thứ tự cột như sau:
+bash
+Sao chép
+Chỉnh sửa
+https://docs.google.com/document/d/1sWRwNjPROTxANN7IC6xNdlP9AyB9twanUUTImORjhy8/edit
+                             ↑↑↑ Đây là ID
+Gán ID này vào biến templateFileId trong đoạn script.
+
+3. Chuẩn bị Google Sheets
+Dòng đầu tiên là tiêu đề cột (có hoặc không đều được)
+
+Từ dòng 2 trở đi là dữ liệu
+
+Các cột cần có đúng vị trí (ví dụ cột ten ở cột C – index 2)
 
 STT	CCCD	Họ tên	...	Địa chỉ	Ngày cấp	Nơi cấp	MST	...	so1	so2	...	so11
 
-3. Thêm Script vào Sheets
-Vào Extensions > Apps Script
+4. Thêm Script vào Google Sheets
+Mở file Google Sheets
 
-Dán đoạn code sau vào:
+Vào menu: Extensions > Apps Script
 
-javascript
-Sao chép
-Chỉnh sửa
-function createDocsFromSheetData() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var data = sheet.getDataRange().getValues();
-  var templateFileId = 'YOUR_TEMPLATE_FILE_ID'; // <-- Thay ID tại đây
+Xoá code cũ, dán đoạn script vào
 
-  for (var i = 1; i < data.length; i++) {
-    var ten = data[i][2];
-    if (!ten) continue;
+Thay templateFileId bằng ID bạn vừa lấy ở bước 2
 
-    var diachi = data[i][6];
-    var cccd = data[i][1];
-    var ngaycap = data[i][7];
-    var noicap = data[i][8];
-    var mst = data[i][9];
+Nhấn lưu (Ctrl+S hoặc Cmd+S)
 
-    var doc = DriveApp.getFileById(templateFileId).makeCopy("Hợp đồng - " + ten);
-    var docId = doc.getId();
-    var docBody = DocumentApp.openById(docId).getBody();
+5. Chạy script
+Chọn hàm createDocsFromSheetData
 
-    docBody.replaceText('{{ten}}', ten);
-    docBody.replaceText('{{diachi}}', diachi);
-    docBody.replaceText('{{cccd}}', cccd);
-    docBody.replaceText('{{ngaycap}}', ngaycap);
-    docBody.replaceText('{{noicap}}', noicap);
-    docBody.replaceText('{{mst}}', mst);
+Nhấn nút ▶️ (Run)
 
-    for (var j = 1; j <= 11; j++) {
-      docBody.replaceText('{{so' + j + '}}', data[i][10 + j]);
-    }
-  }
-}
-4. Chạy script
-Nhấn nút ▶️ để chạy hàm createDocsFromSheetData
+Google sẽ hỏi cấp quyền (làm theo hướng dẫn để đồng ý)
 
-Cấp quyền truy cập nếu được yêu cầu (Google sẽ hỏi một lần đầu)
+Script sẽ bắt đầu tạo file Google Docs mới cho từng dòng dữ liệu
 
-📁 Kết quả
-Các file Google Docs sẽ được tạo trong Google Drive của bạn
+6. Xem kết quả
+Mỗi dòng trong Sheets sẽ tạo ra 1 Google Docs
 
-Tên file theo định dạng: Hợp đồng - [Họ tên]
+File sẽ có tên kiểu "Hợp đồng - [Tên]", nằm trong Google Drive của bạn
 
-📌 Ghi chú
-Script này chỉ chạy trong cùng tài khoản Google (không dùng được cho người ngoài nếu không cấp quyền).
-
-Có thể kết hợp thêm:
-
-Xuất file PDF
-
-Gửi email đính kèm
-
-Lưu vào thư mục cụ thể
-
-🧪 Demo (tuỳ chọn)
-[link đến video hoặc ảnh demo nếu có]
-
-❤️ Tác giả
-Anh Hoan
-Lập trình viên web & yêu tự động hoá
+🔧 Troubleshooting (nếu có lỗi)
+Vấn đề	Giải pháp
+Lỗi Exception: Document not found	Kiểm tra ID template đúng chưa
+File không có dữ liệu	Kiểm tra đúng vị trí cột trong Sheets
+Script không chạy	Nhớ cấp quyền lần đầu chạy
